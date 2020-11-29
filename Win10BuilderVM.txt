@@ -1,0 +1,7 @@
+ - Install windows 10 on a VM
+ - Install notepad++
+ - Install git
+ - Install ImgBurn
+ - Install vSphere PowerCLI
+ - Git clone http://git.smhplus.org:81/ls12943/Win10Build.git
+ - Sample run command: cscript build.vbs C:\Users\ls12943\Desktop\SW_DVD9_Win_Pro_10_1709.1_64BIT_English_Pro_Ent_EDU_N_MLF_X21-67518.ISO
