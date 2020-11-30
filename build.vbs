@@ -168,8 +168,8 @@ For Each argument in WScript.Arguments
 	End If
 Next
 
-copySetupFiles scriptdir & "\WimMount\Windows\Setup"
-WScript.Quit
+'copySetupFiles scriptdir & "\WimMount\Windows\Setup"
+'WScript.Quit
 
 If objFSO.FileExists(WScript.Arguments(0)) Then
 	mountDisk(WScript.Arguments(0))

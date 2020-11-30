@@ -83,15 +83,19 @@ For Each objItem in colItems
     If InStr(objItem.Type, "GPT") > 0 Then
 		'objShell.Run "diskpart /s """ & scriptdir & "\install_files\diskpart_shrink_efi.txt""", ,True
 		objShell.Run "cmd /c copy /Y ""C:\Windows\setup\scripts\autounattend.xml"" C:\Windows\System32\sysprep\autounattend.xml", ,True
-		objShell.Run "cmd /c rmdir C:\Windows\setup\scripts /s /q", ,True
+		objShell.Run "cmd /c del C:\Windows\setup\scripts\FirstLogon.cmd", ,True
+		objShell.Run "cmd /c move C:\Windows\setup\scripts\SecondLogon.cmd C:\Windows\setup\scripts\FirstLogon.cmd", ,True
+		'objShell.Run "cmd /c rmdir C:\Windows\setup\scripts /s /q", ,True
 		'objShell.Run "cmd /c cd C:\Windows\System32\sysprep & sysprep.exe /oobe /generalize /reboot /unattend:autounattend.xml", ,True
 		objShell.Run "cmd /c cd C:\Windows\System32\sysprep & sysprep.exe /oobe /generalize /shutdown /unattend:autounattend.xml", ,True
 	Else
 		'objShell.Run "diskpart /s """ & scriptdir & "\install_files\diskpart_shrink.txt""", ,True
 		'WScript.Echo "here"
 		'objShell.Run "cmd /c xcopy /Y """ & scriptdir & "\install_files\unattended\autounattend.xml"" C:\Windows\System32\sysprep\", ,True
+		objShell.Run "cmd /c del C:\Windows\setup\scripts\FirstLogon.cmd", ,True
+		objShell.Run "cmd /c move C:\Windows\setup\scripts\SecondLogon.cmd C:\Windows\setup\scripts\FirstLogon.cmd", ,True
 		objShell.Run "cmd /c copy /Y ""C:\Windows\setup\scripts\autounattend.xml"" C:\Windows\System32\sysprep\autounattend.xml", ,True
-		objShell.Run "cmd /c rmdir C:\Windows\setup\scripts /s /q", ,True
+		'objShell.Run "cmd /c rmdir C:\Windows\setup\scripts /s /q", ,True
 		objShell.Run "cmd /c cd C:\Windows\System32\sysprep & sysprep.exe /oobe /generalize /reboot /unattend:autounattend.xml", ,True
 	End If
 Next
