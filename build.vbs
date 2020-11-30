@@ -104,16 +104,30 @@ Function unmountWIM(dir)
 End Function
 
 Function copySetupFiles(setupdir)
-	Dim objShell
-
+	Dim objShell, fso, folder, files, item
+	
 	Set objShell = CreateObject("Wscript.Shell")
 	objShell.Run "cmd /c mkdir """ & setupdir & "\Scripts""", ,True
+	
+	Set fso = CreateObject("Scripting.FileSystemObject")
+
+	Set folder = fso.GetFolder(scriptdir & "\scripts")
+	Set files = folder.Files
+	
+	For each item In files
+		'WScript.Echo item.Path
+		'WScript.Echo item.Name
+		fso.CopyFile item.Path, setupdir & "\Scripts\" & item.Name, true
+	Next
+
 	objShell.Run "xcopy """ & scriptdir & "\FirstLogon.cmd"" """ & setupdir & "\Scripts\"" /Y", ,True
 	If efi Then
 		'WScript.Echo "copy """ & scriptdir & "\autounattendEFI.xml"" """ & scriptdir & "\Build_ISO\autounattend.xml"" /Y"
 		objShell.Run "cmd /c copy """ & scriptdir & "\autounattend\Win10\autounattendEFI.xml"" """ & scriptdir & "\Build_ISO\autounattend.xml"" /Y", ,True
+		objShell.Run "cmd /c copy """ & scriptdir & "\autounattend\Win10\autounattendEFI.xml"" """ & setupdir & "\Scripts\autounattend.xml"" /Y", ,True
 	Else
 		objShell.Run "xcopy """ & scriptdir & "\autounattend\Win10\autounattend.xml"" """ & scriptdir & "\Build_ISO"" /Y", ,True
+		objShell.Run "xcopy """ & scriptdir & "\autounattend\Win10\autounattend.xml"" """ & setupdir & "\Scripts\"" /Y", ,True
 	End If
 End Function
 
@@ -154,8 +168,8 @@ For Each argument in WScript.Arguments
 	End If
 Next
 
-'startVMBuild("virtualbox")
-'WScript.Quit
+copySetupFiles scriptdir & "\WimMount\Windows\Setup"
+WScript.Quit
 
 If objFSO.FileExists(WScript.Arguments(0)) Then
 	mountDisk(WScript.Arguments(0))

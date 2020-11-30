@@ -4,7 +4,7 @@ setlocal enableDelayedExpansion
 
 "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" createmedium disk --size 61440 --filename "%USERPROFILE%\VirtualBox VMs\%~1\%~1.vdi"
 
-"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" modifyvm "%~1" --memory 4096 --nic1 nat --graphicscontroller vboxsvga --vram 128 --pae off --audiocontroller hda --usbohci on --firmware efi --cpus 2
+"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" modifyvm "%~1" --memory 4096 --nic1 nat --graphicscontroller vboxsvga --vram 128 --pae off --audiocontroller hda --usbohci on --firmware efi --cpus 1
 
 "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" storagectl "%~1" --name "SATA" --add sata --controller IntelAHCI --portcount 2 --bootable on
 
