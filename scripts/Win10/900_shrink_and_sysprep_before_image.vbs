@@ -86,8 +86,8 @@ For Each objItem in colItems
 		objShell.Run "cmd /c del C:\Windows\setup\scripts\FirstLogon.cmd", ,True
 		objShell.Run "cmd /c move C:\Windows\setup\scripts\SecondLogon.cmd C:\Windows\setup\scripts\FirstLogon.cmd", ,True
 		'objShell.Run "cmd /c rmdir C:\Windows\setup\scripts /s /q", ,True
-		'objShell.Run "cmd /c cd C:\Windows\System32\sysprep & sysprep.exe /oobe /generalize /reboot /unattend:autounattend.xml", ,True
-		objShell.Run "cmd /c cd C:\Windows\System32\sysprep & sysprep.exe /oobe /generalize /shutdown /unattend:autounattend.xml", ,True
+		objShell.Run "cmd /c cd C:\Windows\System32\sysprep & sysprep.exe /oobe /generalize /reboot /unattend:autounattend.xml", ,True
+		'objShell.Run "cmd /c cd C:\Windows\System32\sysprep & sysprep.exe /oobe /generalize /shutdown /unattend:autounattend.xml", ,True
 	Else
 		'objShell.Run "diskpart /s """ & scriptdir & "\install_files\diskpart_shrink.txt""", ,True
 		'WScript.Echo "here"

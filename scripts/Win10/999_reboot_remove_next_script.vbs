@@ -1,6 +1,6 @@
 Option Explicit
 
-Dim type2, labordelivery, nicu, scriptdir, objFSO, script, uac
+Dim type2, labordelivery, nicu, scriptdir, objFSO, script, file, uac
 
 Dim objShell
 Dim RegLocAutoLogon
@@ -31,6 +31,8 @@ Function rebootNow(message)
 	Set objShell = CreateObject("Wscript.Shell")
 	objShell.Run "wscript """ & scriptdir & "\exclude_next_script.vbs""", ,True
 	objShell.Run "cscript """ & scriptdir & "\exclude_reboot.vbs" & "", ,True
+	
+	objShell.Run "cmd /c rmdir C:\Windows\setup\scripts /s /q", ,True
 	
 	While True
 		WScript.Echo (message)
@@ -95,8 +97,6 @@ If objFSO.FileExists(file) Then
 	objFSO.DeleteFile(file), True
 	'WScript.Echo "File exists"
 End If
-
-objShell.Run "cmd /c rmdir C:\Windows\setup\scripts /s /q", ,True
 
 uac = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA"
 objShell.RegWrite uac, "1", "REG_DWORD"

@@ -1,13 +1,13 @@
 Option Explicit
 'On Error Resume Next
 
-Dim objFSO, script, scriptdir, iso, cdrom, efi, argument
+Dim imagename, objFSO, script, scriptdir, iso, cdrom, efi, argument, hypervisor, boot, imageindex, osname, arch
 
-Const imagename = "Win10Build"
-	
 Set objFSO = CreateObject("Scripting.FileSystemObject")
 Set script = objFSO.GetFile(WScript.ScriptFullName)
 scriptdir = objFSO.GetParentFolderName(script)
+
+imagename = ReadIni(scriptdir & "\build.ini", "installer", "name")
 
 Function getISO()
 	Dim directory, files, file
@@ -22,6 +22,80 @@ Function getISO()
 	Next
 	getISO = ""
 
+End Function
+
+Function ReadIni( myFilePath, mySection, myKey )
+    ' This function returns a value read from an INI file
+    '
+    ' Arguments:
+    ' myFilePath  [string]  the (path and) file name of the INI file
+    ' mySection   [string]  the section in the INI file to be searched
+    ' myKey       [string]  the key whose value is to be returned
+    '
+    ' Returns:
+    ' the [string] value for the specified key in the specified section
+    '
+    ' CAVEAT:     Will return a space if key exists but value is blank
+    '
+    ' Written by Keith Lacelle
+    ' Modified by Denis St-Pierre and Rob van der Woude
+
+    Const ForReading   = 1
+    Const ForWriting   = 2
+    Const ForAppending = 8
+
+    Dim intEqualPos
+    Dim objFSO, objIniFile
+    Dim strFilePath, strKey, strLeftString, strLine, strSection
+
+    Set objFSO = CreateObject( "Scripting.FileSystemObject" )
+
+    ReadIni     = ""
+    strFilePath = Trim( myFilePath )
+    strSection  = Trim( mySection )
+    strKey      = Trim( myKey )
+
+    If objFSO.FileExists( strFilePath ) Then
+        Set objIniFile = objFSO.OpenTextFile( strFilePath, ForReading, False )
+        Do While objIniFile.AtEndOfStream = False
+            strLine = Trim( objIniFile.ReadLine )
+
+            ' Check if section is found in the current line
+            If LCase( strLine ) = "[" & LCase( strSection ) & "]" Then
+                strLine = Trim( objIniFile.ReadLine )
+
+                ' Parse lines until the next section is reached
+                Do While Left( strLine, 1 ) <> "["
+                    ' Find position of equal sign in the line
+                    intEqualPos = InStr( 1, strLine, "=", 1 )
+                    If intEqualPos > 0 Then
+                        strLeftString = Trim( Left( strLine, intEqualPos - 1 ) )
+                        ' Check if item is found in the current line
+                        If LCase( strLeftString ) = LCase( strKey ) Then
+                            ReadIni = Trim( Mid( strLine, intEqualPos + 1 ) )
+                            ' In case the item exists but value is blank
+                            If ReadIni = "" Then
+                                ReadIni = " "
+                            End If
+                            ' Abort loop when item is found
+                            Exit Do
+                        End If
+                    End If
+
+                    ' Abort if the end of the INI file is reached
+                    If objIniFile.AtEndOfStream Then Exit Do
+
+                    ' Continue with next line
+                    strLine = Trim( objIniFile.ReadLine )
+                Loop
+            Exit Do
+            End If
+        Loop
+        objIniFile.Close
+    Else
+        WScript.Echo strFilePath & " doesn't exists. Exiting..."
+        Wscript.Quit 1
+    End If
 End Function
 
 Function copyFiles(src, dst)
@@ -75,7 +149,7 @@ Function mountWIM(wim, dir)
 	Set objShell = CreateObject("Wscript.Shell")
 	'WScript.Echo "dism /Mount-Wim /WimFile:""" & wim & """ /Index:1 /MountDir:""" & dir & """"
 	objShell.Run "cmd /c mkdir """ & dir & """", ,True
-	objShell.Run "dism /Mount-Wim /WimFile:""" & wim & """ /Index:3 /MountDir:""" & dir & """" , ,True	
+	objShell.Run "dism /Mount-Wim /WimFile:""" & wim & """ /Index:" & imageindex & " /MountDir:""" & dir & """" , ,True	
 End Function
 
 Function addDriversToWIM(dir)
@@ -84,7 +158,7 @@ Function addDriversToWIM(dir)
 	Set objShell = CreateObject("Wscript.Shell")
 	'WScript.Echo "dism /Mount-Wim /WimFile:""" & wim & """ /Index:1 /MountDir:""" & dir & """"
 	'objShell.Run "cmd /c mkdir """ & dir & """", ,True
-	objShell.Run "dism /Image:""" & dir & """ /Add-Driver /Driver:""\\deploy\push\install\win10\install_files\drivers"" /Recurse" , ,True	
+	objShell.Run "dism /Image:""" & dir & """ /Add-Driver /Driver:""" & scriptdir & "\drivers"" /Recurse" , ,True	
 End Function
 
 Function cleanupWIM(dir)
@@ -111,7 +185,7 @@ Function copySetupFiles(setupdir)
 	
 	Set fso = CreateObject("Scripting.FileSystemObject")
 
-	Set folder = fso.GetFolder(scriptdir & "\scripts")
+	Set folder = fso.GetFolder(scriptdir & "\scripts\" & osname)
 	Set files = folder.Files
 	
 	For each item In files
@@ -120,14 +194,14 @@ Function copySetupFiles(setupdir)
 		fso.CopyFile item.Path, setupdir & "\Scripts\" & item.Name, true
 	Next
 
-	objShell.Run "xcopy """ & scriptdir & "\FirstLogon.cmd"" """ & setupdir & "\Scripts\"" /Y", ,True
+	objShell.Run "xcopy """ & scriptdir & "\build.ini"" """ & setupdir & "\Scripts\"" /Y", ,True
 	If efi Then
 		'WScript.Echo "copy """ & scriptdir & "\autounattendEFI.xml"" """ & scriptdir & "\Build_ISO\autounattend.xml"" /Y"
-		objShell.Run "cmd /c copy """ & scriptdir & "\autounattend\Win10\autounattendEFI.xml"" """ & scriptdir & "\Build_ISO\autounattend.xml"" /Y", ,True
-		objShell.Run "cmd /c copy """ & scriptdir & "\autounattend\Win10\autounattendEFI.xml"" """ & setupdir & "\Scripts\autounattend.xml"" /Y", ,True
+		objShell.Run "cmd /c copy """ & scriptdir & "\autounattend\" & osname & "\autounattendEFI.xml"" """ & scriptdir & "\Build_ISO\autounattend.xml"" /Y", ,True
+		objShell.Run "cmd /c copy """ & scriptdir & "\autounattend\" & osname & "\autounattendEFI.xml"" """ & setupdir & "\Scripts\autounattend.xml"" /Y", ,True
 	Else
-		objShell.Run "xcopy """ & scriptdir & "\autounattend\Win10\autounattend.xml"" """ & scriptdir & "\Build_ISO"" /Y", ,True
-		objShell.Run "xcopy """ & scriptdir & "\autounattend\Win10\autounattend.xml"" """ & setupdir & "\Scripts\"" /Y", ,True
+		objShell.Run "xcopy """ & scriptdir & "\autounattend\" & osname & "\autounattend.xml"" """ & scriptdir & "\Build_ISO"" /Y", ,True
+		objShell.Run "xcopy """ & scriptdir & "\autounattend\" & osname & "\autounattend.xml"" """ & setupdir & "\Scripts\"" /Y", ,True
 	End If
 End Function
 
@@ -152,41 +226,45 @@ Function startVMBuild(hypervisor)
 		objShell.Run "C:\Windows\SYSWOW64\WindowsPowerShell\v1.0\powershell.exe -executionpolicy unrestricted -command "". '" & scriptdir & "\vm_build\vmware\vmware_build.ps1'""", ,False
 	ElseIf hypervisor = "virtualbox" Then
 		'WScript.Echo """" & scriptdir & "\vm_build\virtualbox\virtualbox_build.bat"" ""Windows10"" """ & scriptdir & "\" & imagename & ".iso"""
-		objShell.Run """" & scriptdir & "\vm_build\virtualbox\virtualbox_build.bat"" ""Windows10"" """ & scriptdir & "\" & imagename & ".iso""", ,False
+		objShell.Run """" & scriptdir & "\vm_build\virtualbox\virtualbox_build.vbs"" /name:""" & imagename & """ /osname:""" & osname & """ /arch:""" & arch & """ /iso:""" & scriptdir & "\" & imagename & ".iso""", ,False
 	End If
 End Function
 
-'iso = getISO()
+osname = ReadIni(scriptdir & "\build.ini", "installer", "osname")
+iso = ReadIni(scriptdir & "\build.ini", "installer", "iso")
+boot = ReadIni(scriptdir & "\build.ini", "installer", "boot")
+arch = ReadIni(scriptdir & "\build.ini", "installer", "arch")
+imageindex = ReadIni(scriptdir & "\build.ini", "installer", "imageindex")
+hypervisor = ReadIni(scriptdir & "\build.ini", "hypervisor", "type")
+
 efi = false
 'If WScript.Arguments(1) = "EFI" Then
 '	efi = true
 'End If
 
-For Each argument in WScript.Arguments
-	If UCase(argument) = "EFI" OR UCase(argument) = "UEFI" Then
-		efi = true
-	End If
-Next
+If UCase(boot) = "EFI" OR UCase(boot) = "UEFI" Then
+	efi = true
+End If
 
 'copySetupFiles scriptdir & "\WimMount\Windows\Setup"
 'WScript.Quit
 
-If objFSO.FileExists(WScript.Arguments(0)) Then
-	mountDisk(WScript.Arguments(0))
+If objFSO.FileExists(iso) Then
+	mountDisk(iso)
 	cdrom = findDisk()
 	removeISOBuild scriptdir & "\Build_ISO"
 	'WScript.Quit
 	If NOT cdrom = "" Then
 		'WScript.Echo "copy files"
 		copyFiles cdrom & "\", scriptdir & "\Build_ISO"
-		unmountDisk(WScript.Arguments(0))
+		unmountDisk(iso)
 		mountWIM scriptdir & "\Build_ISO\sources\install.wim", scriptdir & "\WimMount"
 		copySetupFiles scriptdir & "\WimMount\Windows\Setup"
 		addDriversToWIM scriptdir & "\WimMount"
 		'cleanupWIM scriptdir & "\WimMount"
 		unmountWIM scriptdir & "\WimMount"
 		createISO()
-		startVMBuild("virtualbox")
+		startVMBuild(hypervisor)
 	Else
 		WScript.Echo "Either more than one or no virtual cdroms were found"
 		WScript.Quit
