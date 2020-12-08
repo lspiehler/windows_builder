@@ -13,13 +13,13 @@ Notes: Enter your comments here...
 <settings pass="windowsPE">
 <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <SetupUILanguage>
-<UILanguage>en-US</UILanguage>
+<UILanguage>{{uilanguage}}</UILanguage>
 </SetupUILanguage>
-<InputLocale>0409:00000409</InputLocale>
-<SystemLocale>en-US</SystemLocale>
-<UILanguage>en-US</UILanguage>
-<UILanguageFallback>en-US</UILanguageFallback>
-<UserLocale>en-US</UserLocale>
+<InputLocale>{{inputlocale}}</InputLocale>
+<SystemLocale>{{systemlocale}}</SystemLocale>
+<UILanguage>{{uilanguage}}</UILanguage>
+<UILanguageFallback>{{uilanguagefallback}}</UILanguageFallback>
+<UserLocale>{{userlocale}}</UserLocale>
 </component>
 <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <DiskConfiguration>
@@ -94,7 +94,7 @@ Notes: Enter your comments here...
 <InstallFrom>
     <MetaData wcm:action="add">
         <Key>/IMAGE/INDEX</Key>
-        <Value>3</Value>
+        <Value>{{imageindex}}</Value>
     </MetaData>
 </InstallFrom>
 </OSImage>
@@ -107,8 +107,8 @@ Notes: Enter your comments here...
 <WillShowUI>Never</WillShowUI>
 </ProductKey>
 <AcceptEula>true</AcceptEula>
-<FullName>Admin</FullName>
-<Organization>Slidell Memorial Hospital</Organization>
+<FullName>{{fullname}}</FullName>
+<Organization>{{orgname}}</Organization>
 </UserData>
 </component>
 </settings>
@@ -124,11 +124,11 @@ Notes: Enter your comments here...
 </settings>
 <settings pass="specialize">
 <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-<InputLocale>0409:00000409</InputLocale>
-<SystemLocale>en-US</SystemLocale>
-<UILanguage>en-US</UILanguage>
-<UILanguageFallback>en-US</UILanguageFallback>
-<UserLocale>en-US</UserLocale>
+<InputLocale>{{inputlocale}}</InputLocale>
+<SystemLocale>{{systemlocale}}</SystemLocale>
+<UILanguage>{{uilanguage}}</UILanguage>
+<UILanguageFallback>{{uilanguagefallback}}</UILanguageFallback>
+<UserLocale>{{userlocale}}</UserLocale>
 </component>
 <component name="Microsoft-Windows-Security-SPP-UX" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <SkipAutoActivation>true</SkipAutoActivation>
@@ -137,19 +137,19 @@ Notes: Enter your comments here...
 <CEIPEnabled>0</CEIPEnabled>
 </component>
 <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-<ComputerName>Test-10-EFI-PC</ComputerName>
-<ProductKey>NPPR9-FWDCX-D2C8J-H872K-2YT43</ProductKey>
+<ComputerName>{{name}}</ComputerName>
+<ProductKey>{{productkey}}</ProductKey>
 </component>
 </settings>
 <settings pass="oobeSystem">
 <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <AutoLogon>
 <Password>
-<Value>adminpassword</Value>
+<Value>{{adminpass}}</Value>
 <PlainText>true</PlainText>
 </Password>
 <Enabled>true</Enabled>
-<Username>Admin</Username>
+<Username>{{adminuser}}</Username>
 </AutoLogon>
 <OOBE>
 <HideEULAPage>true</HideEULAPage>
@@ -165,18 +165,18 @@ Notes: Enter your comments here...
 <LocalAccounts>
 <LocalAccount wcm:action="add">
 <Password>
-<Value>adminpassword</Value>
+<Value>{{adminpass}}</Value>
 <PlainText>true</PlainText>
 </Password>
 <Description></Description>
-<DisplayName>Admin</DisplayName>
+<DisplayName>{{displayname}}</DisplayName>
 <Group>Administrators</Group>
-<Name>Admin</Name>
+<Name>{{adminuser}}</Name>
 </LocalAccount>
 </LocalAccounts>
 </UserAccounts>
-<RegisteredOrganization>Slidell Memorial Hospital</RegisteredOrganization>
-<RegisteredOwner>Admin</RegisteredOwner>
+<RegisteredOrganization>{{orgname}}</RegisteredOrganization>
+<RegisteredOwner>{{adminuser}}</RegisteredOwner>
 <DisableAutoDaylightTimeSet>false</DisableAutoDaylightTimeSet>
 <FirstLogonCommands>
 <SynchronousCommand wcm:action="add">
@@ -210,7 +210,7 @@ Notes: Enter your comments here...
 <CommandLine>C:\Windows\Setup\Scripts\FirstLogon.cmd</CommandLine>
 </SynchronousCommand>
 </FirstLogonCommands>
-<TimeZone>Central Standard Time</TimeZone>
+<TimeZone>{{timezone}}</TimeZone>
 </component>
 </settings>
 </unattend>

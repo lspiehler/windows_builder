@@ -158,7 +158,7 @@ Function addDriversToWIM(dir)
 	Set objShell = CreateObject("Wscript.Shell")
 	'WScript.Echo "dism /Mount-Wim /WimFile:""" & wim & """ /Index:1 /MountDir:""" & dir & """"
 	'objShell.Run "cmd /c mkdir """ & dir & """", ,True
-	objShell.Run "dism /Image:""" & dir & """ /Add-Driver /Driver:""" & scriptdir & "\drivers"" /Recurse" , ,True	
+	objShell.Run "dism /Image:""" & dir & """ /Add-Driver /Driver:""" & scriptdir & "\drivers\" & osname & "\" & arch & """ /Recurse" , ,True	
 End Function
 
 Function cleanupWIM(dir)
@@ -178,10 +178,11 @@ Function unmountWIM(dir)
 End Function
 
 Function copySetupFiles(setupdir)
-	Dim objShell, fso, folder, files, item
+	Dim objShell, fso, folder, files, item, sourcexml
 	
 	Set objShell = CreateObject("Wscript.Shell")
 	objShell.Run "cmd /c mkdir """ & setupdir & "\Scripts""", ,True
+	objShell.Run "cmd /c mkdir """ & scriptdir & "\Build_ISO\Drivers""", ,True
 	
 	Set fso = CreateObject("Scripting.FileSystemObject")
 
@@ -193,16 +194,64 @@ Function copySetupFiles(setupdir)
 		'WScript.Echo item.Name
 		fso.CopyFile item.Path, setupdir & "\Scripts\" & item.Name, true
 	Next
+	
+	If fso.FolderExists(scriptdir & "\drivers\install\" & osname & "\" & arch) Then
+		Set folder = fso.GetFolder(scriptdir & "\drivers\install\" & osname & "\" & arch)
+		Set files = folder.Files
+		
+		For each item In files
+			'WScript.Echo item.Path
+			'WScript.Echo item.Name
+			fso.CopyFile item.Path, scriptdir & "\Build_ISO\Drivers\" & item.Name, true
+		Next
+	End If
 
 	objShell.Run "xcopy """ & scriptdir & "\build.ini"" """ & setupdir & "\Scripts\"" /Y", ,True
 	If efi Then
 		'WScript.Echo "copy """ & scriptdir & "\autounattendEFI.xml"" """ & scriptdir & "\Build_ISO\autounattend.xml"" /Y"
-		objShell.Run "cmd /c copy """ & scriptdir & "\autounattend\" & osname & "\autounattendEFI.xml"" """ & scriptdir & "\Build_ISO\autounattend.xml"" /Y", ,True
-		objShell.Run "cmd /c copy """ & scriptdir & "\autounattend\" & osname & "\autounattendEFI.xml"" """ & setupdir & "\Scripts\autounattend.xml"" /Y", ,True
+		'objShell.Run "cmd /c copy """ & scriptdir & "\autounattend\" & osname & "\autounattendEFI.xml"" """ & scriptdir & "\Build_ISO\autounattend.xml"" /Y", ,True
+		'objShell.Run "cmd /c copy """ & scriptdir & "\autounattend\" & osname & "\autounattendEFI.xml"" """ & setupdir & "\Scripts\autounattend.xml"" /Y", ,True
+		sourcexml = scriptdir & "\autounattend\" & osname & "\autounattendEFI.xml"
 	Else
-		objShell.Run "xcopy """ & scriptdir & "\autounattend\" & osname & "\autounattend.xml"" """ & scriptdir & "\Build_ISO"" /Y", ,True
-		objShell.Run "xcopy """ & scriptdir & "\autounattend\" & osname & "\autounattend.xml"" """ & setupdir & "\Scripts\"" /Y", ,True
+		sourcexml = scriptdir & "\autounattend\" & osname & "\autounattend.xml"
+		'objShell.Run "xcopy """ & scriptdir & "\autounattend\" & osname & "\autounattend.xml"" """ & scriptdir & "\Build_ISO"" /Y", ,True
+		'objShell.Run "xcopy """ & scriptdir & "\autounattend\" & osname & "\autounattend.xml"" """ & setupdir & "\Scripts\"" /Y", ,True
 	End If
+	
+	autoUnattendTemplate sourcexml, scriptdir & "\Build_ISO\autounattend.xml"
+	autoUnattendTemplate sourcexml, setupdir & "\Scripts\autounattend.xml"
+	
+End Function
+
+Function autoUnattendTemplate(source, destination)
+
+	Dim objFSO, s, d, line, var, vars
+	
+	vars = Array("imageindex", "name", "fullname", "orgname", "productkey", "displayname", "adminuser", "adminpass", "uilanguage", "inputlocale", "systemlocale", "userlocale", "uilanguage", "uilanguagefallback", "timezone")
+
+	Set objFSO = CreateObject( "Scripting.FileSystemObject" )
+
+	Set s = objFSO.OpenTextFile(source)
+	Set d = objFSO.CreateTextFile(destination,True)
+
+	Do Until s.AtEndOfStream
+		line = s.ReadLine
+		For Each var In vars
+			'WScript.Echo "{{" & var & "}}"
+			If InStr(line, "{{" & var & "}}") >= 1 Then
+				'WScript.Echo "Yep"
+				line = Replace(line, "{{" & var & "}}", ReadIni("C:\Users\Lyas\Documents\windows_builder\build.ini", "installer", var))
+				Exit For
+			Else
+				'WScript.Echo "Nope"
+			End If
+		Next
+		'WScript.Echo line
+		d.Write line & vbCrlf
+	Loop
+	s.Close
+	d.Close
+
 End Function
 
 Function createISO()
