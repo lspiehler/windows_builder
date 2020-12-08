@@ -177,6 +177,17 @@ Function unmountWIM(dir)
 	objShell.Run "dism /Unmount-Wim /MountDir:""" & dir & """ /Commit" , ,True	
 End Function
 
+Function splitImage()
+	Dim objShell, fso
+
+	Set objShell = CreateObject("Wscript.Shell")
+	objShell.Run "Dism /Split-Image /ImageFile:""" & scriptdir & "\Build_ISO\sources\install.wim"" /SWMFile:""" & scriptdir & "\Build_ISO\sources\install.swm"" /FileSize:3800" , ,True
+	
+	Set fso = CreateObject("Scripting.FileSystemObject")
+	fso.DeleteFile(scriptdir & "\Build_ISO\sources\install.wim")
+	
+End Function
+
 Function copySetupFiles(setupdir)
 	Dim objShell, fso, folder, files, item, sourcexml
 	
@@ -296,6 +307,8 @@ If UCase(boot) = "EFI" OR UCase(boot) = "UEFI" Then
 End If
 
 'copySetupFiles scriptdir & "\WimMount\Windows\Setup"
+'createISO()
+'startVMBuild(hypervisor)
 'WScript.Quit
 
 If objFSO.FileExists(iso) Then
@@ -312,6 +325,7 @@ If objFSO.FileExists(iso) Then
 		addDriversToWIM scriptdir & "\WimMount"
 		'cleanupWIM scriptdir & "\WimMount"
 		unmountWIM scriptdir & "\WimMount"
+		splitImage()
 		createISO()
 		startVMBuild(hypervisor)
 	Else
