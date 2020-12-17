@@ -1,13 +1,41 @@
 Option Explicit
 'On Error Resume Next
 
-Dim imagename, objFSO, script, scriptdir, iso, cdrom, efi, argument, hypervisor, boot, imageindex, osname, arch
+Dim imagename, objFSO, script, scriptdir, iso, cdrom, efi, argument, hypervisor, boot, imageindex, osname, arch, args, arg, argstr
+
+Set args = Wscript.Arguments
+
+For Each arg In args
+	argstr = argstr & " " & arg
+Next
 
 Set objFSO = CreateObject("Scripting.FileSystemObject")
 Set script = objFSO.GetFile(WScript.ScriptFullName)
 scriptdir = objFSO.GetParentFolderName(script)
 
 imagename = ReadIni(scriptdir & "\build.ini", "installer", "name")
+
+Function forceUAC
+	Dim objShell
+
+	If WScript.Arguments.Named.Item("uac") = "" Then
+		'WScript.Echo "No UAC"
+		Set objShell = CreateObject("Shell.Application")
+		objShell.ShellExecute "cscript.exe", Chr(34) & WScript.ScriptFullName & Chr(34) & argstr & " /uac:true", "", "runas", 1
+		WScript.Quit
+	End If
+End Function
+
+Function forceCScriptExecution
+    Dim Arg, Str
+    If Not LCase( Right( WScript.FullName, 12 ) ) = "\cscript.exe" Then
+        CreateObject( "WScript.Shell" ).Run("cscript //nologo """ & WScript.ScriptFullName & """" & argstr)
+        WScript.Quit
+    End If
+End Function
+
+forceUAC()
+forceCScriptExecution()
 
 Function getISO()
 	Dim directory, files, file
