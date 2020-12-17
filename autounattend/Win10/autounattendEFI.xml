@@ -194,7 +194,7 @@ Notes: Enter your comments here...
 <SynchronousCommand wcm:action="add">
 <Order>3</Order>
 <RequiresUserInput>false</RequiresUserInput>
-<CommandLine>cmd /C wmic useraccount where name="Admin" set PasswordExpires=false</CommandLine>
+<CommandLine>cmd /C wmic useraccount where name="{{adminuser}}" set PasswordExpires=false</CommandLine>
 <Description>Password Never Expires</Description>
 </SynchronousCommand>
 <SynchronousCommand wcm:action="add">
