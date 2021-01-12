@@ -1,6 +1,8 @@
 Option Explicit
 'On Error Resume Next
 
+Const bytesToKb = 1024
+
 Dim imagename, objFSO, script, scriptdir, iso, cdrom, efi, argument, hypervisor, boot, imageindex, osname, arch, args, arg, argstr
 
 Set args = Wscript.Arguments
@@ -206,13 +208,20 @@ Function unmountWIM(dir)
 End Function
 
 Function splitImage()
-	Dim objShell, fso
 
-	Set objShell = CreateObject("Wscript.Shell")
-	objShell.Run "Dism /Split-Image /ImageFile:""" & scriptdir & "\Build_ISO\sources\install.wim"" /SWMFile:""" & scriptdir & "\Build_ISO\sources\install.swm"" /FileSize:3800" , ,True
+	Dim objShell, fso, objFile
 	
 	Set fso = CreateObject("Scripting.FileSystemObject")
-	fso.DeleteFile(scriptdir & "\Build_ISO\sources\install.wim")
+	Set objFile = objFSO.GetFile(scriptdir & "\Build_ISO\sources\install.wim")
+	
+	If objFile.Size > 3984588800 Then
+
+		Set objShell = CreateObject("Wscript.Shell")
+		objShell.Run "cmd /c Dism /Split-Image /ImageFile:""" & scriptdir & "\Build_ISO\sources\install.wim"" /SWMFile:""" & scriptdir & "\Build_ISO\sources\install.swm"" /FileSize:3800 & pause" , ,True
+		
+		fso.DeleteFile(scriptdir & "\Build_ISO\sources\install.wim")
+		
+	End If
 	
 End Function
 
@@ -315,6 +324,9 @@ Function startVMBuild(hypervisor)
 	ElseIf hypervisor = "virtualbox" Then
 		'WScript.Echo """" & scriptdir & "\vm_build\virtualbox\virtualbox_build.bat"" ""Windows10"" """ & scriptdir & "\" & imagename & ".iso"""
 		objShell.Run """" & scriptdir & "\vm_build\virtualbox\virtualbox_build.vbs"" /name:""" & imagename & """ /osname:""" & osname & """ /arch:""" & arch & """ /iso:""" & scriptdir & "\" & imagename & ".iso""", ,False
+	ElseIf hypervisor = "kvm" Then
+		'WScript.Echo """" & scriptdir & "\vm_build\virtualbox\virtualbox_build.bat"" ""Windows10"" """ & scriptdir & "\" & imagename & ".iso"""
+		objShell.Run "cscript """ & scriptdir & "\vm_build\kvm\kvm_build.vbs""", ,False
 	End If
 End Function
 
@@ -336,7 +348,7 @@ End If
 
 'copySetupFiles scriptdir & "\WimMount\Windows\Setup"
 'createISO()
-'startVMBuild(hypervisor)
+'splitImage()
 'WScript.Quit
 
 If objFSO.FileExists(iso) Then
