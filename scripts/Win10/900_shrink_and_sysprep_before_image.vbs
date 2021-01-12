@@ -141,7 +141,7 @@ Set objShell = CreateObject("Wscript.Shell")
 'WScript.Quit
 
 If UCase(ReadIni(scriptdir & "\build.ini", "installer", "sysprep")) = "FALSE" Then
-	objShell.Run "wscript """ & scriptdir & "\999_reboot_remove_next_script.vbs""", ,True
+	objShell.Run "wscript """ & scriptdir & "\998_activate.vbs""", ,True
 	WScript.Quit
 End If
 
