@@ -186,7 +186,7 @@ Function addDriversToWIM(dir)
 	Dim objShell
 
 	Set objShell = CreateObject("Wscript.Shell")
-	'WScript.Echo "dism /Mount-Wim /WimFile:""" & wim & """ /Index:1 /MountDir:""" & dir & """"
+	'WScript.Echo "dism /Image:""" & dir & """ /Add-Driver /Driver:""" & scriptdir & "\drivers\" & osname & "\" & arch & """ /Recurse"
 	'objShell.Run "cmd /c mkdir """ & dir & """", ,True
 	objShell.Run "dism /Image:""" & dir & """ /Add-Driver /Driver:""" & scriptdir & "\drivers\" & osname & "\" & arch & """ /Recurse" , ,True	
 End Function
@@ -217,7 +217,7 @@ Function splitImage()
 	If objFile.Size > 3984588800 Then
 
 		Set objShell = CreateObject("Wscript.Shell")
-		objShell.Run "cmd /c Dism /Split-Image /ImageFile:""" & scriptdir & "\Build_ISO\sources\install.wim"" /SWMFile:""" & scriptdir & "\Build_ISO\sources\install.swm"" /FileSize:3800 & pause" , ,True
+		objShell.Run "cmd /c Dism /Split-Image /ImageFile:""" & scriptdir & "\Build_ISO\sources\install.wim"" /SWMFile:""" & scriptdir & "\Build_ISO\sources\install.swm"" /FileSize:3800" , ,True
 		
 		fso.DeleteFile(scriptdir & "\Build_ISO\sources\install.wim")
 		
@@ -362,7 +362,11 @@ If objFSO.FileExists(iso) Then
 		unmountDisk(iso)
 		mountWIM scriptdir & "\Build_ISO\sources\install.wim", scriptdir & "\WimMount"
 		copySetupFiles scriptdir & "\WimMount\Windows\Setup"
+		'WScript.Echo "Press [ENTER] to continue..."
+		'WScript.StdIn.ReadLine
 		addDriversToWIM scriptdir & "\WimMount"
+		'WScript.Echo "Press [ENTER] to continue..."
+		'WScript.StdIn.ReadLine
 		'cleanupWIM scriptdir & "\WimMount"
 		unmountWIM scriptdir & "\WimMount"
 		splitImage()

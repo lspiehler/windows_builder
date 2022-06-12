@@ -104,13 +104,25 @@ If osname = "Win10" Then
 	Else
 		ostype = "Windows10"
 	End If
+ElseIf osname = "Win11" Then
+	If arch = "64" Then
+		ostype = "Windows11_64"
+	Else
+		ostype = "Windows11"
+	End If
 ElseIf osname = "Win2019" Then
 	If arch = "64" Then
 		ostype = "Windows2019_64"
 	Else
 		ostype = "Windows2019_64"
 	End If
-Else 
+ElseIf osname = "Win2022" Then
+	If arch = "64" Then
+		ostype = "Windows2019_64"
+	Else
+		ostype = "Windows2019_64"
+	End If
+
 	ostype = "Windows10_64"
 End If
 
